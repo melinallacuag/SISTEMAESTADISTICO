@@ -148,7 +148,8 @@ export default {
       this.accessibleRoutes = [
         { path: "/", name: "Reporte Estadisticos"},
         { path: "/reporte", name: "Reporte en Tablas"},
-         { path: "/lineal", name: "Reporte Lineal"},
+        { path: "/lineal", name: "Reporte Lineal"},
+        { path: "/consolidadoTurno", name: "Consolidado"},
         // Agrega más rutas según sea necesario
       ];
     }

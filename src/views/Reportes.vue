@@ -270,12 +270,15 @@
       </div>
       <div class="overflow-x-auto max-h-[450px]">
         <table class="table-fixed w-full  text-center text-black border border-gray-500 rounded-xl overflow-hidden">
-          <thead class="bg-gray-300 text-xxs font-bold text-black">
+          <thead class="bg-gray-400 text-xxs font-bold text-black">
             <tr>
-              <th class="w-1/2 px-2 py-2 border border-gray-500 rounded-tl-xl">NOMBRES</th>
-              <th class="w-1/10 px-2 py-2 border border-gray-500">N° DPCHO.</th>
-               <th class="w-1/10 px-2 py-2 border border-gray-500">GALONES</th>
-              <th class="w-1/10 px-2 py-2 border border-gray-500 rounded-tr-xl">MONTO S/.</th>
+              <th class="w-1/10 px-2 py-2 border border-gray-500 rounded-tl-xl">TIPO DE VEHÍCULO</th>
+              <th class="w-1/10 px-2 py-2 border border-gray-500 bg-yellow-500">NÚMERO DE DPCHO.</th>
+              <th class="w-1/10 px-2 py-2 border border-gray-500 bg-yellow-500">GALONES <br>(GAL)</th>
+              <th class="w-1/10 px-2 py-2 border border-gray-500 bg-yellow-500">PROMEDIO X TRAN. <br>(GAL)</th>
+              <th class="w-1/10 px-2 py-2 border border-gray-500 bg-yellow-500">VENTAS RELATIVAS <br>(%)</th>
+              <th class="w-1/10 px-2 py-2 border border-gray-500 bg-blue-500">MONTO <br>(S/.)</th>
+              <th class="w-1/10 px-2 py-2 border border-gray-500 bg-blue-500 rounded-tr-xl">TRAN.<br> (%)</th>
             </tr>
           </thead>
           <tbody class="text-xxs font-medium">
@@ -284,14 +287,21 @@
               <td class="px-2 py-2 border border-gray-500">{{ item.despachos }}</td>
               <td class="px-2 py-2 border border-gray-500">{{ Number(item.galones).toLocaleString('en-US', {
                 minimumFractionDigits: 3, maximumFractionDigits: 3 }) }}</td>
+              <td class="px-2 py-2 border border-gray-500">{{ Number(item.galones/item.despachos).toLocaleString('en-US', {
+                minimumFractionDigits: 3, maximumFractionDigits: 3 }) }}</td>
+              <td class="px-2 py-2 border border-gray-500">{{ ventaRelativa(item) }}%</td>
               <td class="px-2 py-2 border border-gray-500">{{ Number(item.soles).toLocaleString('en-US', {
                 minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</td>
+              <td class="px-2 py-2 border border-gray-500">{{ ventaTransaccion(item) }}%</td>
             </tr>
-            <tr class="bg-gray-200 font-bold">
+            <tr class="bg-gray-400 font-bold">
               <td class="px-2 py-2 border border-gray-500 text-right">TOTALES</td>
-              <td class="px-2 py-2 border border-gray-500">{{ totalDespachosTtv() }}</td>
-              <td class="px-2 py-2 border border-gray-500">{{ totalGalonesTtv() }}</td>
-              <td class="px-2 py-2 border border-gray-500">{{ totalSolesTtv() }}</td>
+              <td class="px-2 py-2 border border-gray-500 bg-yellow-500">{{ totalDespachosTtv() }}</td>
+              <td class="px-2 py-2 border border-gray-500 bg-yellow-500">{{ totalGalonesTtv() }}</td>
+              <td class="px-2 py-2 border border-gray-500 bg-yellow-500">{{ totalPromedioTtv() }}</td>
+              <td class="px-2 py-2 border border-gray-500 bg-yellow-500">{{ totalVentasRelativasTtv() }}%</td>  
+              <td class="px-2 py-2 border border-gray-500 bg-blue-500">{{ totalSolesTtv() }}</td>
+              <td class="px-2 py-2 border border-gray-500 bg-blue-500">{{ totalTransaccionTtv() }}%</td>  
             </tr>
           </tbody>
         </table>
@@ -425,12 +435,100 @@ export default {
     totalGalonesTtv(){
       return this.listaVentaTtv.reduce((sum, item) => sum + Number(item.galones), 0).toLocaleString('en-US', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
     },
+    totalPromedioTtv(){
+      const sumaPromedios = this.listaVentaTtv.reduce((sum, item) => {
+      if (item.despachos > 0) {
+          return sum + (Number(item.galones) / Number(item.despachos));
+        }
+        return sum;
+      }, 0);
+      
+      return sumaPromedios.toLocaleString('en-US', { 
+        minimumFractionDigits: 3, 
+        maximumFractionDigits: 3 
+      });
+    },
+    ventaRelativa(item) {
+      const sumaPromedios = this.listaVentaTtv.reduce((sum, item) => {
+        if (item.despachos > 0) {
+          return sum + (Number(item.galones) / Number(item.despachos));
+        }
+        return sum;
+      }, 0);
+
+      if (sumaPromedios === 0) return '0.00';
+
+      const porcentaje = ((Number(item.galones) / Number(item.despachos)) / sumaPromedios) * 100;
+      return porcentaje.toLocaleString('en-US', { 
+        minimumFractionDigits: 2, 
+        maximumFractionDigits: 2 
+      });
+    },
+    totalVentasRelativasTtv() {
+      const sumaPromedios = this.listaVentaTtv.reduce((sum, item) => {
+        if (item.despachos > 0) {
+          return sum + (Number(item.galones) / Number(item.despachos));
+        }
+        return sum;
+      }, 0);
+
+      if (sumaPromedios === 0) return '0.00';
+
+      const totalPorcentaje = this.listaVentaTtv.reduce((sum, item) => {
+        if (item.despachos > 0) {
+          return sum + ((Number(item.galones) / Number(item.despachos)) / sumaPromedios) * 100;
+        }
+        return sum;
+      }, 0);
+
+      return totalPorcentaje.toLocaleString('en-US', { 
+        minimumFractionDigits: 2, 
+        maximumFractionDigits: 2 
+      });
+    },
+    ventaTransaccion(item) {
+      const sumaTransaccion = this.listaVentaTtv.reduce((sum, item) => {
+        if (item.despachos > 0) {
+          return sum + (Number(item.soles));
+        }
+        return sum;
+      }, 0);
+
+      if (sumaTransaccion === 0) return '0.00';
+
+      const relativo = ((Number(item.soles)) / sumaTransaccion) * 100;
+      return relativo.toLocaleString('en-US', { 
+        minimumFractionDigits: 2, 
+        maximumFractionDigits: 2 
+      });
+    },
+    totalTransaccionTtv() {
+      const sumaTransaccion = this.listaVentaTtv.reduce((sum, item) => {
+        if (item.despachos > 0) {
+          return sum + (Number(item.soles));
+        }
+        return sum;
+      }, 0);
+
+      if (sumaTransaccion === 0) return '0.00';
+
+      const totalTransaccion = this.listaVentaTtv.reduce((sum, item) => {
+        if (item.despachos > 0) {
+          return sum + ((Number(item.soles)) / sumaTransaccion) * 100;
+        }
+        return sum;
+      }, 0);
+
+      return totalTransaccion.toLocaleString('en-US', { 
+        minimumFractionDigits: 2, 
+        maximumFractionDigits: 2 
+      });
+    },
     totalSolesTtv() {
       return this.listaVentaTtv.reduce((sum, item) => sum + Number(item.soles), 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     },
     getColorClass(index) {
       const colores = [
-        'bg-red-300',
         'bg-yellow-300',
         'bg-green-300',
         'bg-blue-300',
@@ -441,6 +539,7 @@ export default {
         'bg-indigo-300',
         'bg-lime-300',
         'bg-amber-300',
+        'bg-red-300',
         'bg-cyan-300',
         'bg-rose-300',
         'bg-fuchsia-300',

@@ -1,5 +1,5 @@
 <template>
-    <!--<div class="bg-white dark:bg-white p-4 rounded-lg shadow-md w-full overflow-x-auto">
+  <!--<div class="bg-white dark:bg-white p-4 rounded-lg shadow-md w-full overflow-x-auto">
     <div class="bg-[#212529] text-white p-3 rounded-lg flex justify-between items-center mb-">
       <h1 class="text-xs font-bold uppercase tracking-widest">Reportes</h1>
     </div>
@@ -242,22 +242,14 @@ export default {
       return `${año}-${mes}-${dia}T23:59`;
     },
     /** Combustible 2 */
-    formatFechaIsoCompleta(date, hora = null) {
-      const yyyy = date.getFullYear();
-      const mm = String(date.getMonth() + 1).padStart(2, '0');
-      const dd = String(date.getDate()).padStart(2, '0');
-
-      let hh, mi, ss;
-
-      if (hora) {
-          [hh = '00', mi = '00', ss = '00'] = hora.split(':');
-      } else {
-        hh = String(date.getHours()).padStart(2, '0');
-        mi = String(date.getMinutes()).padStart(2, '0');
-        ss = String(date.getSeconds()).padStart(2, '0');
-      }
-
-      return `${yyyy}-${mm}-${dd}T${hh}:${mi}:${ss}`;
+    formatFechaIsoCompleta(fecha) {
+      const yyyy = fecha.getFullYear();
+      const mm = String(fecha.getMonth() + 1).padStart(2, '0');
+      const dd = String(fecha.getDate()).padStart(2, '0');
+      const hh = String(fecha.getHours()).padStart(2, '0');
+      const mi = String(fecha.getMinutes()).padStart(2, '0');
+      const ss = String(fecha.getSeconds()).padStart(2, '0');
+      return `${yyyy}-${mm}-${dd} ${hh}:${mi}:${ss}`;
     },
     formatFechaIsoCompletad(date, hora = '00:00:00') {
       const yyyy = date.getFullYear();
@@ -380,7 +372,7 @@ export default {
         const fechaInicioVD = new Date(fechaInicioC);
         const fechaFinVD = new Date(fechaFinC);
 
-          console.log( "dd",fechaInicioVD,fechaFinVD)
+        //  console.log( "dd",fechaInicioVD,fechaFinVD)
 
         inicioActual = new Date(fechaInicioVD);
         finActual = new Date(fechaFinVD);
@@ -422,8 +414,25 @@ export default {
             const horaEsperada = `${i.toString().padStart(2, '0')}:00`;
             horas.push(horaEsperada);
 
-            const actual = dataActual.find(d => d.fechaHora.slice(11, 16) === horaEsperada);
-            const anterior = dataAnterior.find(d => d.fechaHora.slice(11, 16) === horaEsperada);
+            const getHora = fechaStr => {
+              const partes = fechaStr.split(' ');
+              if (partes.length > 1) {
+                const horaMin = partes[1].slice(0, 5);
+                return horaMin;
+              }
+              return null;
+            };
+
+            /* const getHora = fechaStr => {
+               const fecha = new Date(fechaStr);
+               if (!isNaN(fecha)) {
+                 return fecha.getHours().toString().padStart(2, '0') + ':00';
+               }
+               return fechaStr.slice(11, 16);
+             };*/
+
+            const actual = dataActual.find(d => getHora(d.fechaHora) === horaEsperada);
+            const anterior = dataAnterior.find(d => getHora(d.fechaHora) === horaEsperada);
 
             ventasActual.push(actual ? actual.soles : 0);
             ventasAnterior.push(anterior ? anterior.soles : 0);
@@ -455,6 +464,7 @@ export default {
               color: '#48bb78'
             }
           ];
+          return;
         } else if (diferenciaDias === 7) {
           inicioAnterior = new Date(fechaInicioVD);
           inicioAnterior.setDate(inicioAnterior.getDate() - 7);
@@ -473,15 +483,15 @@ export default {
         }
       }
 
-      console.log("hoy",inicioActual,finActual)
+      // console.log("hoy",inicioActual,finActual)
       const fechaInicioActualApiD = this.formatFechaIsoCompleta(inicioActual);
       const fechaFinActualApiD = this.formatFechaIsoCompleta(finActual);
-      console.log("fechass:,",fechaInicioActualApiD,fechaFinActualApiD)
+      // console.log("fechass:,",fechaInicioActualApiD,fechaFinActualApiD)
 
       const response = await api.get(`/RProducto/ListadoCombustibleFechaDia?FechaInicial=${fechaInicioActualApiD}&FechaFinal=${fechaFinActualApiD}`);
       let data = response.data;
 
-      console.log(`/RProducto/ListadoCombustibleFechaDia?FechaInicial=${fechaInicioActualApiD}&FechaFinal=${fechaFinActualApiD}`)
+      // console.log(`/RProducto/ListadoCombustibleFechaDia?FechaInicial=${fechaInicioActualApiD}&FechaFinal=${fechaFinActualApiD}`)
 
       const fechaInicioAnteriorApiD = this.formatFechaIsoCompleta(inicioAnterior);
       const fechaFinAnteriorApiD = this.formatFechaIsoCompleta(finAnterior);
@@ -741,7 +751,7 @@ export default {
       this.esTurnoActual = false;
       this.mostrarOpcionesC = false;
       this.botonfiltrarC = true,
-      this.filterData(fechaInicioFormateada, fechaFinFormateada);
+        this.filterData(fechaInicioFormateada, fechaFinFormateada);
     },
     /** */
     formatearFechaISO(fecha) {
